@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Tracentic.Sdk/Tracentic.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tracentic.Sdk.Tests/Tracentic.Sdk.Tests.csproj" />
+  </Folder>
+</Solution>
