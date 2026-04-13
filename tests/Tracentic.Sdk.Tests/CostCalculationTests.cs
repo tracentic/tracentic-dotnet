@@ -84,7 +84,7 @@ public class CostCalculationTests : IDisposable
         var cost = activity.GetTagItem("llm.cost.total_usd");
         Assert.NotNull(cost);
         // (1000 / 1M * 3.00) + (500 / 1M * 15.00) = 0.003 + 0.0075 = 0.0105
-        Assert.Equal(0.0105m, (decimal)cost);
+        Assert.Equal(0.0105, (double)cost!, precision: 10);
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ public class CostCalculationTests : IDisposable
         var activity = _exportedActivities.Last();
         var cost = activity.GetTagItem("llm.cost.total_usd");
         Assert.NotNull(cost);
-        Assert.Equal(0.0m, (decimal)cost);
+        Assert.Equal(0.0, (double)cost!);
     }
 
     /// <summary>

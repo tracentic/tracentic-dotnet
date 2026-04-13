@@ -26,42 +26,44 @@ internal sealed class AttributeMerger
         TracenticScope? scope,
         IReadOnlyDictionary<string, object>? spanAttributes)
     {
-        // Layer 1 — global (lowest priority)
-        var result = new Dictionary<string, object>(_global.GetAll());
+        // Build the result in priority order (span → scope → global) so that
+        // when MaxAttributeCount is hit, the lower-priority layers are the ones
+        // dropped — never a span-level attribute.
+        var result = new Dictionary<string, object>(_limits.MaxAttributeCount);
 
-        // Layer 2 — scope attributes
-        if (scope is not null)
-            foreach (var (k, v) in scope.Attributes)
-                result[k] = v;
-
-        // Layer 3 — span-level (highest priority)
         if (spanAttributes is not null)
-            foreach (var (k, v) in spanAttributes)
-                result[k] = v;
+            AddLayer(result, spanAttributes);
 
-        return Enforce(result);
+        if (scope is not null && result.Count < _limits.MaxAttributeCount)
+            AddLayer(result, scope.Attributes);
+
+        if (result.Count < _limits.MaxAttributeCount)
+            AddLayer(result, _global.GetAll());
+
+        return result;
     }
 
-    private Dictionary<string, object> Enforce(Dictionary<string, object> attrs)
+    private void AddLayer(
+        Dictionary<string, object> result,
+        IEnumerable<KeyValuePair<string, object>> layer)
     {
-        var result = new Dictionary<string, object>(attrs.Count);
-
-        foreach (var (key, value) in attrs)
+        foreach (var (key, value) in layer)
         {
             var safeKey = key.Length > _limits.MaxKeyLength
                 ? key[.._limits.MaxKeyLength]
                 : key;
+
+            // Higher-priority layer already wrote this key — skip; do not let a
+            // lower-priority layer overwrite it.
+            if (result.ContainsKey(safeKey)) continue;
+
+            if (result.Count >= _limits.MaxAttributeCount) return;
 
             var safeValue = value is string s && s.Length > _limits.MaxStringValueLength
                 ? s[.._limits.MaxStringValueLength]
                 : value;
 
             result[safeKey] = safeValue;
-
-            if (result.Count >= _limits.MaxAttributeCount)
-                break;
         }
-
-        return result;
     }
 }

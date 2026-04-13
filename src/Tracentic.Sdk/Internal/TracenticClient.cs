@@ -182,8 +182,9 @@ internal sealed class TracenticClient : ITracentic
     // Cost is only computed when all four prerequisites are met:
     // Model, InputTokens, OutputTokens, and a matching CustomPricing entry.
     // This is intentional — partial data produces no cost rather than a
-    // misleading estimate. Uses decimal to avoid floating-point rounding
-    // in financial values.
+    // misleading estimate. Typed as double end-to-end (SDK → OTLP JSON → DB)
+    // so no conversion happens at any hop: OTLP JSON numbers are IEEE-754 and
+    // double's ~15 significant digits are more than enough for per-span USD.
     private void SetCost(Activity a, TracenticSpan s)
     {
         if (s.Model is null || s.InputTokens is null
@@ -192,10 +193,9 @@ internal sealed class TracenticClient : ITracentic
             || !_options.CustomPricing.TryGetValue(s.Model, out var p))
             return;
 
-        var cost = (decimal)(
+        var cost =
             (s.InputTokens.Value  / 1_000_000.0) * p.InputCostPerMillion +
-            (s.OutputTokens.Value / 1_000_000.0) * p.OutputCostPerMillion
-        );
+            (s.OutputTokens.Value / 1_000_000.0) * p.OutputCostPerMillion;
         a.SetTag("llm.cost.total_usd", cost);
     }
 }

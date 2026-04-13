@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -98,14 +99,38 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
             _ = response.Content.ReadAsStringAsync()
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
+            if (!response.IsSuccessStatusCode)
+            {
+                // Diagnostics flow through an EventSource so operators can enable
+                // them with `dotnet-trace --providers Tracentic-Sdk` without us
+                // taking an ILogger dependency in the SDK.
+                TracenticEventSource.Log.ExportFailed(
+                    (int)response.StatusCode, response.ReasonPhrase ?? "");
+            }
+
             return response.IsSuccessStatusCode
                 ? ExportResult.Success
                 : ExportResult.Failure;
         }
-        catch
+        catch (Exception ex)
         {
+            TracenticEventSource.Log.ExportException(ex.GetType().FullName ?? "Exception", ex.Message);
             return ExportResult.Failure;
         }
+    }
+
+    [EventSource(Name = "Tracentic-Sdk")]
+    private sealed class TracenticEventSource : EventSource
+    {
+        public static readonly TracenticEventSource Log = new();
+
+        [Event(1, Level = EventLevel.Warning, Message = "OTLP export failed: HTTP {0} {1}")]
+        public void ExportFailed(int statusCode, string reasonPhrase) =>
+            WriteEvent(1, statusCode, reasonPhrase);
+
+        [Event(2, Level = EventLevel.Error, Message = "OTLP export threw: {0}: {1}")]
+        public void ExportException(string exceptionType, string message) =>
+            WriteEvent(2, exceptionType, message);
     }
 
     private static OtlpJsonSpan ConvertActivity(Activity activity)
