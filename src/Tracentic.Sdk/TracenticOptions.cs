@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 
 namespace Tracentic;
@@ -100,6 +101,23 @@ public class TracenticOptions
     /// payloads. Defaults are aligned with the OpenTelemetry specification.
     /// </summary>
     public AttributeLimits AttributeLimits { get; set; } = new();
+
+    /// <summary>
+    /// Factory for the <see cref="HttpMessageHandler"/> used by the OTLP
+    /// exporter. Override to supply custom TLS, proxy, or outbound HTTP
+    /// middleware (e.g. Polly retry). The SDK owns the lifetime of the
+    /// returned handler and disposes it on shutdown.
+    ///
+    /// Defaults to a <see cref="SocketsHttpHandler"/> with a 5-minute
+    /// <c>PooledConnectionLifetime</c> so long-lived processes pick up
+    /// DNS changes.
+    /// </summary>
+    public Func<HttpMessageHandler>? HttpMessageHandlerFactory { get; set; }
+
+    /// <summary>
+    /// Per-request timeout for OTLP exports. Default: 30 seconds.
+    /// </summary>
+    public TimeSpan ExportTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>Internal — not part of the public API.</summary>
     internal bool MiddlewareRegisteredExplicitly { get; set; }

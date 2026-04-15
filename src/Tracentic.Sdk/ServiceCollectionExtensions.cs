@@ -105,7 +105,11 @@ public static class ServiceCollectionExtensions
             return;
         }
 
-        var exporter = new OtlpJsonExporter(endpoint, apiKey);
+        var exporter = new OtlpJsonExporter(
+            endpoint,
+            apiKey,
+            options.HttpMessageHandlerFactory,
+            options.ExportTimeout);
         builder.AddProcessor(
             new BatchActivityExportProcessor(
                 exporter,

@@ -5,9 +5,41 @@
     <RootNamespace>Tracentic</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.1.0</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <!-- NuGet package metadata -->
+  <PropertyGroup>
+    <PackageId>Tracentic.Sdk</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Tracentic</Authors>
+    <Company>Tracentic</Company>
+    <Product>Tracentic .NET SDK</Product>
+    <Description>LLM observability SDK for .NET: scoped tracing, cost tracking, and OTLP export to Tracentic or any OTLP/HTTP JSON endpoint.</Description>
+    <PackageTags>llm;observability;tracing;opentelemetry;otlp;ai;tracentic</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/tracentic/tracentic-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tracentic/tracentic-dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright 2026 Tracentic</Copyright>
+  </PropertyGroup>
+
+  <!-- Source Link + deterministic build for debuggable packages -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\NOTICE" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -18,6 +50,7 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.*" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.*" />
     <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

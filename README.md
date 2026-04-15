@@ -180,6 +180,22 @@ var parentScopeId = message.ApplicationProperties["tracentic-scope-id"] as strin
 var linked = tracentic.Begin("fulfillment", parentScopeId: parentScopeId);
 ```
 
+### HTTP transport
+
+The SDK owns a single long-lived `HttpClient` dedicated to the ingest endpoint. Connections are pooled and recycled every 5 minutes so long-running processes pick up DNS changes. To customize TLS, proxy, or outbound HTTP middleware (e.g. Polly retry), supply your own `HttpMessageHandler`:
+
+```csharp
+opts.HttpMessageHandlerFactory = () => new SocketsHttpHandler
+{
+    PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+    Proxy = new WebProxy("http://corp-proxy:8080"),
+};
+
+opts.ExportTimeout = TimeSpan.FromSeconds(10);
+```
+
+The SDK owns the returned handler's lifetime and disposes it on shutdown. Do not share the handler across other `HttpClient` instances.
+
 ## Configuration reference
 
 | Option | Default | Description |
@@ -188,10 +204,13 @@ var linked = tracentic.Begin("fulfillment", parentScopeId: parentScopeId);
 | `ServiceName` | `"unknown-service"` | Service identifier in the dashboard |
 | `Endpoint` | `"https://ingest.tracentic.dev"` | OTLP ingestion endpoint |
 | `Environment` | `"production"` | Deployment environment tag |
+| `Collector` | remote (cloud) | Where spans are sent. See `TracenticCollector.Remote(...)` |
 | `CustomPricing` | `null` | Model pricing for cost calculation |
 | `GlobalAttributes` | `null` | Static attributes on every span |
-| `RequestAttributes` | `null` | Per-request attribute callback |
+| `RequestAttributes` | `null` | Per-request attribute callback (ASP.NET Core) |
 | `AttributeLimits` | platform defaults | Limits on attribute count, key/value length |
+| `HttpMessageHandlerFactory` | `SocketsHttpHandler` w/ 5-min pooled lifetime | Custom HTTP transport for the OTLP exporter |
+| `ExportTimeout` | `30s` | Per-request timeout for OTLP exports |
 
 ## Running tests
 

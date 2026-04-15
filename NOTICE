@@ -1,0 +1,7 @@
+Tracentic .NET SDK
+Copyright 2026 Tracentic
+
+This product includes software developed at Tracentic.
+
+This product depends on OpenTelemetry .NET (https://github.com/open-telemetry/opentelemetry-dotnet),
+licensed under the Apache License, Version 2.0.

@@ -24,13 +24,30 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
     };
 
     private readonly HttpClient _http;
+    private readonly HttpMessageHandler _handler;
     private readonly Uri _endpoint;
 
-    public OtlpJsonExporter(string endpoint, string apiKey)
+    public OtlpJsonExporter(
+        string endpoint,
+        string apiKey,
+        Func<HttpMessageHandler>? handlerFactory = null,
+        TimeSpan? timeout = null)
     {
         _endpoint = new Uri($"{endpoint.TrimEnd('/')}/v1/ingest");
-        _http = new HttpClient();
+        _handler = handlerFactory?.Invoke() ?? new SocketsHttpHandler
+        {
+            // Recycle pooled connections periodically so long-lived
+            // processes pick up DNS changes for the ingest endpoint.
+            PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+        };
+        _http = new HttpClient(_handler, disposeHandler: false)
+        {
+            Timeout = timeout ?? TimeSpan.FromSeconds(30),
+        };
         _http.DefaultRequestHeaders.Add("x-tracentic-api-key", apiKey);
+        var version = typeof(OtlpJsonExporter).Assembly
+            .GetName().Version?.ToString() ?? "0.0.0";
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd($"Tracentic.Sdk/{version}");
     }
 
     public override ExportResult Export(in Batch<Activity> batch)
@@ -200,6 +217,7 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
     protected override bool OnShutdown(int timeoutMilliseconds)
     {
         _http.Dispose();
+        _handler.Dispose();
         return true;
     }
 

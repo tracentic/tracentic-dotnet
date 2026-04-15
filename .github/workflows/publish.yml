@@ -1,0 +1,55 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+            10.0.x
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.0-dev.${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/Tracentic.Sdk/Tracentic.Sdk.csproj --configuration Release --no-build -p:Version=${{ steps.version.outputs.version }} -o artifacts
+
+      - name: Push to NuGet
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/*
