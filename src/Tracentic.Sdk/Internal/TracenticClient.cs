@@ -16,6 +16,8 @@ internal sealed class TracenticClient : ITracentic
     private readonly TracenticGlobalContext _global;
     private readonly AttributeMerger _merger;
     private readonly TracenticOptions _options;
+    private readonly HashSet<string> _pricingWarned = new();
+    private readonly object _pricingWarnedLock = new();
 
     public TracenticClient(
         TracenticGlobalContext global,
@@ -188,14 +190,32 @@ internal sealed class TracenticClient : ITracentic
     private void SetCost(Activity a, TracenticSpan s)
     {
         if (s.Model is null || s.InputTokens is null
-            || s.OutputTokens is null
-            || _options.CustomPricing is null
-            || !_options.CustomPricing.TryGetValue(s.Model, out var p))
+            || s.OutputTokens is null)
             return;
+
+        if (_options.CustomPricing is null
+            || !_options.CustomPricing.TryGetValue(s.Model, out var p))
+        {
+            WarnMissingPricing(s.Model);
+            return;
+        }
 
         var cost =
             (s.InputTokens.Value  / 1_000_000.0) * p.InputCostPerMillion +
             (s.OutputTokens.Value / 1_000_000.0) * p.OutputCostPerMillion;
         a.SetTag("llm.cost.total_usd", cost);
+    }
+
+    private void WarnMissingPricing(string model)
+    {
+        lock (_pricingWarnedLock)
+        {
+            if (!_pricingWarned.Add(model)) return;
+        }
+        System.Diagnostics.Trace.TraceWarning(
+            "[tracentic] No CustomPricing entry for model \"{0}\" — " +
+            "llm.cost.total_usd will be omitted. Set " +
+            "TracenticOptions.CustomPricing to enable cost tracking.",
+            model);
     }
 }

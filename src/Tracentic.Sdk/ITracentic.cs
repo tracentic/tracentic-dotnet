@@ -1,6 +1,20 @@
 namespace Tracentic;
 
 /// <summary>
+/// Well-known constants used by the Tracentic SDK.
+/// </summary>
+public static class TracenticHeaders
+{
+    /// <summary>
+    /// Header / message-property name for propagating a parent scope ID
+    /// across services. Use this constant rather than hard-coding the
+    /// string so a typo on either end can't silently break cross-service
+    /// linking.
+    /// </summary>
+    public const string ScopeId = "x-tracentic-scope-id";
+}
+
+/// <summary>
 /// The primary Tracentic interface. Inject this into your services
 /// to record LLM spans and group them into named operation scopes.
 /// </summary>

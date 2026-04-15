@@ -21,7 +21,7 @@ public class TracenticOptions
     /// OTLP ingestion endpoint. Defaults to Tracentic cloud.
     /// Override for self-hosted or local testing.
     /// </summary>
-    public string Endpoint { get; set; } = "https://ingest.tracentic.dev";
+    public string Endpoint { get; set; } = "https://tracentic.dev";
 
     /// <summary>Deployment environment tag. Default: "production".</summary>
     public string Environment { get; set; } = "production";

@@ -101,7 +101,10 @@ public static class ServiceCollectionExtensions
 
         if (string.IsNullOrEmpty(apiKey))
         {
-            // No API key — no-op, spans not exported
+            System.Diagnostics.Trace.TraceWarning(
+                "[tracentic] No ApiKey provided — spans will be created " +
+                "locally but not exported. Set TracenticOptions.ApiKey to " +
+                "send spans to Tracentic.");
             return;
         }
 
