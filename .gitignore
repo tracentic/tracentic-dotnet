@@ -79,6 +79,11 @@ packages/
 ## TODO: If the tool you use requires repositories.config, also uncomment the next line
 !packages/repositories.config
 
+# Local pack output (dotnet pack -o artifacts)
+artifacts/
+*.nupkg
+*.snupkg
+
 # Windows Azure Build Output
 csx/
 *.build.csdef
