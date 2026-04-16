@@ -33,7 +33,7 @@ Register Tracentic in your DI container at startup:
 builder.Services.AddTracentic(opts =>
 {
     opts.ApiKey = "your-api-key";
-    opts.Endpoint = "https://tracentic.dev";
+    opts.Endpoint = "https://tracentic.dev"; // options, defaults to this endpoint
     opts.ServiceName = "my-service";
     opts.Environment = "production";
     // Required for cost tracking. Without this, llm.cost.total_usd is
@@ -42,6 +42,12 @@ builder.Services.AddTracentic(opts =>
     {
         ["claude-sonnet-4-20250514"] = (3.00, 15.00),
         ["gpt-4o"]                   = (2.50, 10.00),
+    };
+
+    opts.GlobalAttributes = new()
+    {
+        ["region"] = "us-east-1",
+        ["version"] = "2.1.0",
     };
 
     opts.GlobalAttributes = new()
