@@ -12,6 +12,19 @@ dotnet add package Tracentic.Sdk
 
 The SDK targets **.NET 6.0**, **8.0**, and **10.0**.
 
+## Endpoint
+
+Point the SDK at the Tracentic ingestion endpoint by setting `Endpoint = "https://tracentic.dev"` on `TracenticOptions`. This is the hosted service URL that receives spans over OTLP/HTTP JSON — use it unless you're running a self-hosted Tracentic deployment, in which case set your own URL.
+
+```csharp
+builder.Services.AddTracentic(opts =>
+{
+    opts.ApiKey = "your-api-key";
+    opts.Endpoint = "https://tracentic.dev";
+    opts.ServiceName = "my-service";
+});
+```
+
 ## Quick start
 
 Register Tracentic in your DI container at startup:
@@ -20,6 +33,7 @@ Register Tracentic in your DI container at startup:
 builder.Services.AddTracentic(opts =>
 {
     opts.ApiKey = "your-api-key";
+    opts.Endpoint = "https://tracentic.dev";
     opts.ServiceName = "my-service";
     opts.Environment = "production";
     // Required for cost tracking. Without this, llm.cost.total_usd is
@@ -28,6 +42,12 @@ builder.Services.AddTracentic(opts =>
     {
         ["claude-sonnet-4-20250514"] = (3.00, 15.00),
         ["gpt-4o"]                   = (2.50, 10.00),
+    };
+
+    opts.GlobalAttributes = new()
+    {
+        ["region"] = "us-east-1",
+        ["version"] = "2.1.0",
     };
 });
 ```
@@ -231,19 +251,19 @@ The SDK owns the returned handler's lifetime and disposes it on shutdown. Do not
 
 ## Configuration reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `ApiKey` | `null` | API key. If null, spans are created locally but not exported |
-| `ServiceName` | `"unknown-service"` | Service identifier in the dashboard |
-| `Endpoint` | `"https://tracentic.dev"` | OTLP ingestion endpoint |
-| `Environment` | `"production"` | Deployment environment tag |
-| `Collector` | remote (cloud) | Where spans are sent. See `TracenticCollector.Remote(...)` |
-| `CustomPricing` | `null` | Model pricing for cost calculation |
-| `GlobalAttributes` | `null` | Static attributes on every span |
-| `RequestAttributes` | `null` | Per-request attribute callback (ASP.NET Core) |
-| `AttributeLimits` | platform defaults | Limits on attribute count, key/value length |
-| `HttpMessageHandlerFactory` | `SocketsHttpHandler` w/ 5-min pooled lifetime | Custom HTTP transport for the OTLP exporter |
-| `ExportTimeout` | `30s` | Per-request timeout for OTLP exports |
+| Option                      | Default                                       | Description                                                                                                                  |
+| --------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `ApiKey`                    | `null`                                        | API key. If null, spans are created locally but not exported                                                                 |
+| `ServiceName`               | `"unknown-service"`                           | Service identifier in the dashboard                                                                                          |
+| `Endpoint`                  | `"https://tracentic.dev"`                     | Tracentic ingestion endpoint. Use `https://tracentic.dev` for the hosted service. Override only for self-hosted deployments. |
+| `Environment`               | `"production"`                                | Deployment environment tag                                                                                                   |
+| `Collector`                 | remote (cloud)                                | Where spans are sent. See `TracenticCollector.Remote(...)`                                                                   |
+| `CustomPricing`             | `null`                                        | Model pricing for cost calculation                                                                                           |
+| `GlobalAttributes`          | `null`                                        | Static attributes on every span                                                                                              |
+| `RequestAttributes`         | `null`                                        | Per-request attribute callback (ASP.NET Core)                                                                                |
+| `AttributeLimits`           | platform defaults                             | Limits on attribute count, key/value length                                                                                  |
+| `HttpMessageHandlerFactory` | `SocketsHttpHandler` w/ 5-min pooled lifetime | Custom HTTP transport for the OTLP exporter                                                                                  |
+| `ExportTimeout`             | `30s`                                         | Per-request timeout for OTLP exports                                                                                         |
 
 ## Running tests
 
@@ -262,12 +282,12 @@ dotnet test --filter "FullyQualifiedName~CreateChild_SetsParentId"
 
 ### Test files
 
-| File | What it covers |
-|------|----------------|
-| `ScopeTests.cs` | Scope creation, nesting, cross-service linking, correlation IDs |
-| `GlobalContextTests.cs` | Global context set/get/remove, per-request lifecycle, thread safety |
-| `AttributeMergeTests.cs` | Three-layer merge priority (global < scope < span), collision resolution |
-| `AttributeLimitsTests.cs` | Attribute count caps, key/value length truncation, platform maximums |
-| `CostCalculationTests.cs` | Pricing lookup, known/unknown models, case sensitivity |
-| `RequestMiddlewareTests.cs` | Middleware attribute injection, cleanup after request completion |
-| `CollectorTests.cs` | Collector configuration, null API key handling |
+| File                        | What it covers                                                           |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `ScopeTests.cs`             | Scope creation, nesting, cross-service linking, correlation IDs          |
+| `GlobalContextTests.cs`     | Global context set/get/remove, per-request lifecycle, thread safety      |
+| `AttributeMergeTests.cs`    | Three-layer merge priority (global < scope < span), collision resolution |
+| `AttributeLimitsTests.cs`   | Attribute count caps, key/value length truncation, platform maximums     |
+| `CostCalculationTests.cs`   | Pricing lookup, known/unknown models, case sensitivity                   |
+| `RequestMiddlewareTests.cs` | Middleware attribute injection, cleanup after request completion         |
+| `CollectorTests.cs`         | Collector configuration, null API key handling                           |
