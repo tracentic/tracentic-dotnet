@@ -36,6 +36,13 @@ builder.Services.AddTracentic(opts =>
     opts.Endpoint = "https://tracentic.dev";
     opts.ServiceName = "my-service";
     opts.Environment = "production";
+    // Required for cost tracking. Without this, llm.cost.total_usd is
+    // omitted and the SDK warns once per unpriced model.
+    opts.CustomPricing = new()
+    {
+        ["claude-sonnet-4-20250514"] = (3.00, 15.00),
+        ["gpt-4o"]                   = (2.50, 10.00),
+    };
 });
 ```
 
@@ -112,6 +119,8 @@ tracentic.RecordSpan(new TracenticSpan
 
 ### Custom pricing
 
+`CustomPricing` is required for cost tracking. The SDK does not ship with built-in pricing because model prices change frequently and vary by contract. If a span has token data but no matching pricing entry, `llm.cost.total_usd` is omitted and the SDK emits a warning once per model via `System.Diagnostics.Trace`.
+
 ```csharp
 opts.CustomPricing = new()
 {
@@ -119,8 +128,6 @@ opts.CustomPricing = new()
     ["gpt-4o"] = (2.50, 10.00),
 };
 ```
-
-Cost is calculated automatically when a matching pricing entry exists and both token counts are present.
 
 ### Global attributes
 
@@ -168,15 +175,17 @@ Tracentic does not propagate scope IDs automatically — you pass them explicitl
 
 For cross-service linking to work, both services must integrate the Tracentic SDK (or implement the OTLP JSON ingest API directly) and their API keys must belong to the **same tenant**. Spans from different tenants are isolated and cannot be linked.
 
+Use the exported `TracenticHeaders.ScopeId` constant on both ends rather than a string literal — typos silently break linking.
+
 **Via HTTP header:**
 
 ```csharp
 // Service A — outgoing request
 var scope = tracentic.Begin("gateway-handler");
-httpClient.DefaultRequestHeaders.Add("x-tracentic-scope-id", scope.Id);
+httpClient.DefaultRequestHeaders.Add(TracenticHeaders.ScopeId, scope.Id);
 
 // Service B — incoming request
-var parentScopeId = context.Request.Headers["x-tracentic-scope-id"].FirstOrDefault();
+var parentScopeId = context.Request.Headers[TracenticHeaders.ScopeId].FirstOrDefault();
 var linked = tracentic.Begin("worker", parentScopeId: parentScopeId);
 ```
 
@@ -186,13 +195,37 @@ var linked = tracentic.Begin("worker", parentScopeId: parentScopeId);
 // Producer
 var scope = tracentic.Begin("order-processor");
 var message = new ServiceBusMessage(payload);
-message.ApplicationProperties["tracentic-scope-id"] = scope.Id;
+message.ApplicationProperties[TracenticHeaders.ScopeId] = scope.Id;
 await sender.SendMessageAsync(message);
 
 // Consumer
-var parentScopeId = message.ApplicationProperties["tracentic-scope-id"] as string;
+var parentScopeId = message.ApplicationProperties[TracenticHeaders.ScopeId] as string;
 var linked = tracentic.Begin("fulfillment", parentScopeId: parentScopeId);
 ```
+
+### Serverless (AWS Lambda, Azure Functions)
+
+Serverless runtimes freeze or kill the process between invocations, so the `AppDomain.ProcessExit` handler may never fire and any spans still in the buffer are lost. **Force a flush before your handler returns:**
+
+```csharp
+public async Task<APIGatewayProxyResponse> Handler(
+    APIGatewayProxyRequest request,
+    ILambdaContext context)
+{
+    try
+    {
+        return await DoWork(request);
+    }
+    finally
+    {
+        // Resolve the OTel TracerProvider from DI and force-flush
+        // before the runtime freezes the container.
+        _tracerProvider.ForceFlush(timeoutMilliseconds: 5000);
+    }
+}
+```
+
+Without this, you will see spans appear inconsistently — only when a container happens to be reused and the next invocation triggers a flush.
 
 ### HTTP transport
 
