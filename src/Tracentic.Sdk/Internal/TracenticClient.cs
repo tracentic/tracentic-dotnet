@@ -24,8 +24,8 @@ internal sealed class TracenticClient : ITracentic
         AttributeMerger merger,
         TracenticOptions options)
     {
-        _global  = global;
-        _merger  = merger;
+        _global = global;
+        _merger = merger;
         _options = options;
     }
 
@@ -130,8 +130,8 @@ internal sealed class TracenticClient : ITracentic
         => (provider, operationType) switch
         {
             (not null, not null) => $"llm.{provider}.{operationType}",
-            (not null, null)     => $"llm.{provider}",
-            _                    => "llm.call"
+            (not null, null) => $"llm.{provider}",
+            _ => "llm.call"
         };
 
     private static void SetTimestamps(Activity a, TracenticSpan s)
@@ -144,16 +144,16 @@ internal sealed class TracenticClient : ITracentic
 
     private static void SetLlmAttributes(Activity a, TracenticSpan s)
     {
-        if (s.Provider      is not null)
-            a.SetTag("llm.provider",            s.Provider);
-        if (s.Model         is not null)
-            a.SetTag("llm.request.model",        s.Model);
+        if (s.Provider is not null)
+            a.SetTag("llm.provider", s.Provider);
+        if (s.Model is not null)
+            a.SetTag("llm.request.model", s.Model);
         if (s.OperationType is not null)
-            a.SetTag("llm.request.type",         s.OperationType);
-        if (s.InputTokens   is not null)
-            a.SetTag("llm.usage.input_tokens",   s.InputTokens);
-        if (s.OutputTokens  is not null)
-            a.SetTag("llm.usage.output_tokens",  s.OutputTokens);
+            a.SetTag("llm.request.type", s.OperationType);
+        if (s.InputTokens is not null)
+            a.SetTag("llm.usage.input_tokens", s.InputTokens);
+        if (s.OutputTokens is not null)
+            a.SetTag("llm.usage.output_tokens", s.OutputTokens);
         if (s.InputTokens is not null && s.OutputTokens is not null)
             a.SetTag("llm.usage.total_tokens",
                 s.InputTokens.Value + s.OutputTokens.Value);
@@ -171,19 +171,19 @@ internal sealed class TracenticClient : ITracentic
         TracenticScope? scope)
     {
         if (scope is null) return;
-        a.SetTag("tracentic.scope.id",         scope.Id);
-        a.SetTag("tracentic.scope.name",        scope.Name);
+        a.SetTag("tracentic.scope.id", scope.Id);
+        a.SetTag("tracentic.scope.name", scope.Name);
         a.SetTag("tracentic.scope.started_at",
             scope.StartedAt.ToString("O"));
         if (scope.ParentId is not null)
-            a.SetTag("tracentic.scope.parent_id",       scope.ParentId);
+            a.SetTag("tracentic.scope.parent_id", scope.ParentId);
         if (scope.CorrelationId is not null)
-            a.SetTag("tracentic.scope.correlation_id",  scope.CorrelationId);
+            a.SetTag("tracentic.scope.correlation_id", scope.CorrelationId);
     }
 
     // Cost is only computed when all four prerequisites are met:
     // Model, InputTokens, OutputTokens, and a matching CustomPricing entry.
-    // This is intentional — partial data produces no cost rather than a
+    // This is intentional - partial data produces no cost rather than a
     // misleading estimate. Typed as double end-to-end (SDK → OTLP JSON → DB)
     // so no conversion happens at any hop: OTLP JSON numbers are IEEE-754 and
     // double's ~15 significant digits are more than enough for per-span USD.
@@ -201,7 +201,7 @@ internal sealed class TracenticClient : ITracentic
         }
 
         var cost =
-            (s.InputTokens.Value  / 1_000_000.0) * p.InputCostPerMillion +
+            (s.InputTokens.Value / 1_000_000.0) * p.InputCostPerMillion +
             (s.OutputTokens.Value / 1_000_000.0) * p.OutputCostPerMillion;
         a.SetTag("llm.cost.total_usd", cost);
     }
@@ -213,7 +213,7 @@ internal sealed class TracenticClient : ITracentic
             if (!_pricingWarned.Add(model)) return;
         }
         System.Diagnostics.Trace.TraceWarning(
-            "[tracentic] No CustomPricing entry for model \"{0}\" — " +
+            "[tracentic] No CustomPricing entry for model \"{0}\" - " +
             "llm.cost.total_usd will be omitted. Set " +
             "TracenticOptions.CustomPricing to enable cost tracking.",
             model);

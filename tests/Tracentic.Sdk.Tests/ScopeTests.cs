@@ -10,7 +10,7 @@ namespace Tracentic.Sdk.Tests;
 /// creation, nesting, cross-service linking, correlation IDs,
 /// and how scope metadata is attached to recorded spans.
 ///
-/// Scopes are lightweight value objects — they are not disposable,
+/// Scopes are lightweight value objects - they are not disposable,
 /// have no finalizer, and carry no mutable state after creation.
 /// Their ID is auto-generated and never set by the developer.
 /// </summary>

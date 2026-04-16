@@ -117,7 +117,7 @@ public class AttributeMergeTests
 
     /// <summary>
     /// When both scope and span attributes are null, only global
-    /// attributes appear — and no exception is thrown.
+    /// attributes appear - and no exception is thrown.
     /// </summary>
     [Fact]
     public void NullSpanAttributes_OnlyGlobalApplied_NoException()
@@ -132,7 +132,7 @@ public class AttributeMergeTests
     }
 
     /// <summary>
-    /// A null scope means layer 2 is skipped — only global attributes apply.
+    /// A null scope means layer 2 is skipped - only global attributes apply.
     /// </summary>
     [Fact]
     public void NullScope_OnlyGlobalApplied()

@@ -14,7 +14,7 @@ The SDK targets **.NET 6.0**, **8.0**, and **10.0**.
 
 ## Endpoint
 
-Point the SDK at the Tracentic ingestion endpoint by setting `Endpoint = "https://tracentic.dev"` on `TracenticOptions`. This is the hosted service URL that receives spans over OTLP/HTTP JSON — use it unless you're running a self-hosted Tracentic deployment, in which case set your own URL.
+Point the SDK at the Tracentic ingestion endpoint by setting `Endpoint = "https://tracentic.dev"` on `TracenticOptions`. This is the hosted service URL that receives spans over OTLP/HTTP JSON - use it unless you're running a self-hosted Tracentic deployment, in which case set your own URL.
 
 ```csharp
 builder.Services.AddTracentic(opts =>
@@ -183,20 +183,20 @@ When `UseTracentic()` is called explicitly, the automatic startup filter registr
 
 ### Cross-service linking
 
-Tracentic does not propagate scope IDs automatically — you pass them explicitly through whatever transport connects your services (HTTP headers, message properties, etc.).
+Tracentic does not propagate scope IDs automatically - you pass them explicitly through whatever transport connects your services (HTTP headers, message properties, etc.).
 
 For cross-service linking to work, both services must integrate the Tracentic SDK (or implement the OTLP JSON ingest API directly) and their API keys must belong to the **same tenant**. Spans from different tenants are isolated and cannot be linked.
 
-Use the exported `TracenticHeaders.ScopeId` constant on both ends rather than a string literal — typos silently break linking.
+Use the exported `TracenticHeaders.ScopeId` constant on both ends rather than a string literal - typos silently break linking.
 
 **Via HTTP header:**
 
 ```csharp
-// Service A — outgoing request
+// Service A - outgoing request
 var scope = tracentic.Begin("gateway-handler");
 httpClient.DefaultRequestHeaders.Add(TracenticHeaders.ScopeId, scope.Id);
 
-// Service B — incoming request
+// Service B - incoming request
 var parentScopeId = context.Request.Headers[TracenticHeaders.ScopeId].FirstOrDefault();
 var linked = tracentic.Begin("worker", parentScopeId: parentScopeId);
 ```
@@ -237,7 +237,7 @@ public async Task<APIGatewayProxyResponse> Handler(
 }
 ```
 
-Without this, you will see spans appear inconsistently — only when a container happens to be reused and the next invocation triggers a flush.
+Without this, you will see spans appear inconsistently - only when a container happens to be reused and the next invocation triggers a flush.
 
 ### HTTP transport
 

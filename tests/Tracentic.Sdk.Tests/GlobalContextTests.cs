@@ -175,7 +175,7 @@ public class GlobalContextTests : IDisposable
 
     /// <summary>
     /// If a global key already exists before the request, the middleware
-    /// should restore it to its original value after the request — even
+    /// should restore it to its original value after the request - even
     /// if the request attribute overwrote it during the request.
     /// </summary>
     [Fact]

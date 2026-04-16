@@ -97,12 +97,12 @@ public static class ServiceCollectionExtensions
             return;
 
         var endpoint = remote.Endpoint ?? options.Endpoint;
-        var apiKey   = remote.ApiKey   ?? options.ApiKey;
+        var apiKey = remote.ApiKey ?? options.ApiKey;
 
         if (string.IsNullOrEmpty(apiKey))
         {
             System.Diagnostics.Trace.TraceWarning(
-                "[tracentic] No ApiKey provided — spans will be created " +
+                "[tracentic] No ApiKey provided - spans will be created " +
                 "locally but not exported. Set TracenticOptions.ApiKey to " +
                 "send spans to Tracentic.");
             return;

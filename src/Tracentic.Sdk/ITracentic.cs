@@ -23,7 +23,7 @@ public interface ITracentic
     /// <summary>
     /// Creates a new root operation scope. Pass the returned
     /// TracenticScope into RecordSpan to associate spans with
-    /// this operation. No disposal required — fire and forget.
+    /// this operation. No disposal required - fire and forget.
     /// </summary>
     TracenticScope Begin(
         string name,

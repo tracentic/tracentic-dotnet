@@ -23,9 +23,9 @@ internal sealed class TracenticRequestMiddleware
         TracenticOptions options,
         TracenticGlobalContext global)
     {
-        _next    = next;
+        _next = next;
         _options = options;
-        _global  = global;
+        _global = global;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -50,7 +50,7 @@ internal sealed class TracenticRequestMiddleware
         foreach (var (key, value) in attributes)
         {
             if (value is not null) _global.Set(key, value);
-            else                   _global.Remove(key);
+            else _global.Remove(key);
         }
 
         try
@@ -59,11 +59,11 @@ internal sealed class TracenticRequestMiddleware
         }
         finally
         {
-            // Always restore — even if the request threw
+            // Always restore - even if the request threw
             foreach (var (key, prev) in snapshot)
             {
                 if (prev is not null) _global.Set(key, prev);
-                else                  _global.Remove(key);
+                else _global.Remove(key);
             }
         }
     }

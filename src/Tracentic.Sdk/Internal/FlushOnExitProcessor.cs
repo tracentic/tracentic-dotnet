@@ -8,7 +8,7 @@ namespace Tracentic.Sdk.Internal;
 /// A no-op processor that hooks <see cref="AppDomain.ProcessExit"/>
 /// to flush the parent <see cref="TracerProvider"/> before the process exits.
 /// This ensures short-lived apps (console tools, CLI commands, batch
-/// jobs) don't silently lose buffered spans — no hosted service or
+/// jobs) don't silently lose buffered spans - no hosted service or
 /// explicit <c>ForceFlush</c> call required.
 ///
 /// If the provider is shut down through normal disposal (e.g. host

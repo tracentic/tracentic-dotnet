@@ -4,7 +4,7 @@ namespace Tracentic;
 
 /// <summary>
 /// Represents a logical operation scope. Pass to RecordSpan to
-/// associate spans with this operation. Fire and forget — no
+/// associate spans with this operation. Fire and forget - no
 /// disposal or End call required.
 ///
 /// Create a root scope: _tracentic.Begin("name")
@@ -43,7 +43,7 @@ public sealed class TracenticScope
 
     /// <summary>
     /// Attributes associated with this scope. Merged into every
-    /// span that references this scope — overrides global attributes
+    /// span that references this scope - overrides global attributes
     /// on key collision. Overridden by span-level attributes.
     /// </summary>
     public IReadOnlyDictionary<string, object> Attributes { get; }

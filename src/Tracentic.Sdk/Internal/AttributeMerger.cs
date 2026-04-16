@@ -4,7 +4,7 @@ namespace Tracentic.Sdk.Internal;
 /// Merges three layers of attributes into a single flat dictionary.
 /// Priority (lowest → highest): global → scope → span.
 /// On key collision the higher layer wins. The merge always produces
-/// a new dictionary — no input is mutated.
+/// a new dictionary - no input is mutated.
 ///
 /// Enforces <see cref="AttributeLimits"/> to prevent oversized payloads:
 /// keys and string values are truncated, and the total attribute count
@@ -28,7 +28,7 @@ internal sealed class AttributeMerger
     {
         // Build the result in priority order (span → scope → global) so that
         // when MaxAttributeCount is hit, the lower-priority layers are the ones
-        // dropped — never a span-level attribute.
+        // dropped - never a span-level attribute.
         var result = new Dictionary<string, object>(_limits.MaxAttributeCount);
 
         if (spanAttributes is not null)
@@ -53,7 +53,7 @@ internal sealed class AttributeMerger
                 ? key[.._limits.MaxKeyLength]
                 : key;
 
-            // Higher-priority layer already wrote this key — skip; do not let a
+            // Higher-priority layer already wrote this key - skip; do not let a
             // lower-priority layer overwrite it.
             if (result.ContainsKey(safeKey)) continue;
 

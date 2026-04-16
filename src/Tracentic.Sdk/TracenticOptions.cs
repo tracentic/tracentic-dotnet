@@ -43,7 +43,7 @@ public class TracenticOptions
     /// </summary>
     public Dictionary<string, (double InputCostPerMillion,
                                 double OutputCostPerMillion)>? CustomPricing
-        { get; set; }
+    { get; set; }
 
     /// <summary>
     /// Static attributes applied to every span for the lifetime of
@@ -79,7 +79,8 @@ public class TracenticOptions
     ///   };
     /// </summary>
     public Func<HttpContext, Dictionary<string, object?>>?
-        RequestAttributes { get; set; }
+        RequestAttributes
+    { get; set; }
 
     /// <summary>
     /// Configures where spans are sent. Exactly one collector can
@@ -88,7 +89,7 @@ public class TracenticOptions
     ///
     /// Examples:
     ///
-    ///   // Cloud (default — no property needed if ApiKey is set)
+    ///   // Cloud (default - no property needed if ApiKey is set)
     ///   options.Collector = TracenticCollector.Remote();
     ///
     ///   // Custom endpoint
@@ -119,7 +120,7 @@ public class TracenticOptions
     /// </summary>
     public TimeSpan ExportTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
-    /// <summary>Internal — not part of the public API.</summary>
+    /// <summary>Internal - not part of the public API.</summary>
     internal bool MiddlewareRegisteredExplicitly { get; set; }
 }
 

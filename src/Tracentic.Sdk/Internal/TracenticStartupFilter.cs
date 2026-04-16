@@ -5,7 +5,7 @@ namespace Tracentic.Sdk.Internal;
 
 /// <summary>
 /// Automatically registers <see cref="TracenticRequestMiddleware"/>
-/// at the start of the pipeline — unless the user has already called
+/// at the start of the pipeline - unless the user has already called
 /// app.UseTracentic() explicitly (which sets MiddlewareRegisteredExplicitly).
 /// This prevents double-registration while still providing zero-config
 /// middleware for the common case.

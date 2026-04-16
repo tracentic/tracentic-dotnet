@@ -10,14 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-04-15
 
 ### Added
+
 - `TracenticHeaders.ScopeId` constant for cross-service scope-ID propagation. Use this in place of the literal `"x-tracentic-scope-id"` string so a typo on either end can't silently break linking.
-- One-time warning (via `System.Diagnostics.Trace.TraceWarning`) when a span has token data but no matching `CustomPricing` entry — surfaces missing cost configuration that previously failed silently. Emitted at most once per unique model.
-- One-time warning when `AddTracentic` is called without an `ApiKey` — clarifies that spans are created locally but not exported.
+- One-time warning (via `System.Diagnostics.Trace.TraceWarning`) when a span has token data but no matching `CustomPricing` entry - surfaces missing cost configuration that previously failed silently. Emitted at most once per unique model.
+- One-time warning when `AddTracentic` is called without an `ApiKey` - clarifies that spans are created locally but not exported.
 - README guidance for serverless runtimes (AWS Lambda, Azure Functions) explaining why `AppDomain.ProcessExit` may not fire and how to call `TracerProvider.ForceFlush` from `finally`.
 
 ### Changed
+
 - Default `Endpoint` is now `https://tracentic.dev` (previously `https://ingest.tracentic.dev`). Any caller passing an explicit `Endpoint` is unaffected.
-- README clarifies that `CustomPricing` is required for cost tracking — there are no built-in pricing defaults — and that the SDK warns when it's missing.
+- README clarifies that `CustomPricing` is required for cost tracking - there are no built-in pricing defaults - and that the SDK warns when it's missing.
 - README quick start now includes `CustomPricing` so the expected configuration shape is visible by default.
 
 ## [0.1.0] - 2026-04-15
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Initial public release.
 
 ### Added
+
 - Scoped tracing with `ITracentic.Begin`, `TracenticScope.CreateChild`, and cross-service linking via `parentScopeId`.
 - Span recording (`RecordSpan`, `RecordError`) with and without a scope.
 - Three-layer attribute merge (global < scope < span) with platform-enforced limits.

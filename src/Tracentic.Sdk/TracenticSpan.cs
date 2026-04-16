@@ -29,7 +29,7 @@ public class TracenticSpan
     public string? OperationType { get; set; }
 
     /// <summary>
-    /// Call-specific attributes. These have the highest merge priority —
+    /// Call-specific attributes. These have the highest merge priority -
     /// they override scope and global attributes on key collision.
     /// </summary>
     public Dictionary<string, object>? Attributes { get; set; }
