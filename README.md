@@ -12,19 +12,6 @@ dotnet add package Tracentic.Sdk
 
 The SDK targets **.NET 6.0**, **8.0**, and **10.0**.
 
-## Endpoint
-
-Point the SDK at the Tracentic ingestion endpoint by setting `Endpoint = "https://tracentic.dev"` on `TracenticOptions`. This is the hosted service URL that receives spans over OTLP/HTTP JSON — use it unless you're running a self-hosted Tracentic deployment, in which case set your own URL.
-
-```csharp
-builder.Services.AddTracentic(opts =>
-{
-    opts.ApiKey = "your-api-key";
-    opts.Endpoint = "https://tracentic.dev";
-    opts.ServiceName = "my-service";
-});
-```
-
 ## Quick start
 
 Register Tracentic in your DI container at startup:
@@ -33,7 +20,7 @@ Register Tracentic in your DI container at startup:
 builder.Services.AddTracentic(opts =>
 {
     opts.ApiKey = "your-api-key";
-    opts.Endpoint = "https://tracentic.dev";
+    opts.Endpoint = "https://tracentic.dev"; // options, defaults to this endpoint
     opts.ServiceName = "my-service";
     opts.Environment = "production";
     // Required for cost tracking. Without this, llm.cost.total_usd is
