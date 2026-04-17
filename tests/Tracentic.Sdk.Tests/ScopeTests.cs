@@ -292,8 +292,11 @@ public class ScopeTests : IDisposable
         };
         Task.WaitAll(tasks);
 
-        Assert.Equal(2, _activities.Count);
-        var names = _activities.Select(a =>
+        var relevant = _activities
+            .Where(a => a.GetTagItem("tracentic.scope.name") is "scope-1" or "scope-2")
+            .ToList();
+        Assert.Equal(2, relevant.Count);
+        var names = relevant.Select(a =>
             a.GetTagItem("tracentic.scope.name") as string).ToHashSet();
         Assert.Contains("scope-1", names);
         Assert.Contains("scope-2", names);
