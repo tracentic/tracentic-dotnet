@@ -112,7 +112,8 @@ public static class ServiceCollectionExtensions
             endpoint,
             apiKey,
             options.HttpMessageHandlerFactory,
-            options.ExportTimeout);
+            options.ExportTimeout,
+            options.Debug);
         builder.AddProcessor(
             new BatchActivityExportProcessor(
                 exporter,

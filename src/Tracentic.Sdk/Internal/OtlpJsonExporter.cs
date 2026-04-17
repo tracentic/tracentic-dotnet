@@ -26,13 +26,16 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
     private readonly HttpClient _http;
     private readonly HttpMessageHandler _handler;
     private readonly Uri _endpoint;
+    private readonly bool _debug;
 
     public OtlpJsonExporter(
         string endpoint,
         string apiKey,
         Func<HttpMessageHandler>? handlerFactory = null,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null,
+        bool debug = false)
     {
+        _debug = debug;
         _endpoint = new Uri($"{endpoint.TrimEnd('/')}/v1/ingest");
         _handler = handlerFactory?.Invoke() ?? new SocketsHttpHandler
         {
@@ -74,6 +77,9 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
         if (spans.Count == 0)
             return ExportResult.Success;
 
+        if (_debug)
+            TracenticEventSource.Log.ExportStarted(spans.Count, _endpoint.ToString());
+
         var request = new OtlpJsonRequest
         {
             ResourceSpans = new List<OtlpJsonResourceSpans>
@@ -111,9 +117,7 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
                     HttpCompletionOption.ResponseContentRead)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
-            // Drain the response body so the HTTP connection is released
-            // back to the pool and not left dangling.
-            _ = response.Content.ReadAsStringAsync()
+            var responseBody = response.Content.ReadAsStringAsync()
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
             if (!response.IsSuccessStatusCode)
@@ -122,7 +126,12 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
                 // them with `dotnet-trace --providers Tracentic-Sdk` without us
                 // taking an ILogger dependency in the SDK.
                 TracenticEventSource.Log.ExportFailed(
-                    (int)response.StatusCode, response.ReasonPhrase ?? "");
+                    (int)response.StatusCode, response.ReasonPhrase ?? "", responseBody);
+            }
+            else if (_debug)
+            {
+                TracenticEventSource.Log.ExportSucceeded(
+                    (int)response.StatusCode, spans.Count);
             }
 
             return response.IsSuccessStatusCode
@@ -141,13 +150,29 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
     {
         public static readonly TracenticEventSource Log = new();
 
-        [Event(1, Level = EventLevel.Warning, Message = "OTLP export failed: HTTP {0} {1}")]
-        public void ExportFailed(int statusCode, string reasonPhrase) =>
-            WriteEvent(1, statusCode, reasonPhrase);
+        [Event(1, Level = EventLevel.Warning, Message = "OTLP export failed: HTTP {0} {1} - {2}")]
+        public void ExportFailed(int statusCode, string reasonPhrase, string responseBody) =>
+            WriteEvent(1, statusCode, reasonPhrase, responseBody);
 
         [Event(2, Level = EventLevel.Error, Message = "OTLP export threw: {0}: {1}")]
         public void ExportException(string exceptionType, string message) =>
             WriteEvent(2, exceptionType, message);
+
+        [Event(3, Level = EventLevel.Verbose, Message = "Flushing {0} span(s) to {1}")]
+        public void ExportStarted(int spanCount, string endpoint) =>
+            WriteEvent(3, spanCount, endpoint);
+
+        [Event(4, Level = EventLevel.Verbose, Message = "Export succeeded: HTTP {0} ({1} spans)")]
+        public void ExportSucceeded(int statusCode, int spanCount) =>
+            WriteEvent(4, statusCode, spanCount);
+
+        [Event(5, Level = EventLevel.Verbose, Message = "Exporter shutting down...")]
+        public void ShutdownStarted() =>
+            WriteEvent(5);
+
+        [Event(6, Level = EventLevel.Verbose, Message = "Exporter shutdown complete")]
+        public void ShutdownComplete() =>
+            WriteEvent(6);
     }
 
     private static OtlpJsonSpan ConvertActivity(Activity activity)
@@ -216,8 +241,12 @@ internal sealed class OtlpJsonExporter : BaseExporter<Activity>
 
     protected override bool OnShutdown(int timeoutMilliseconds)
     {
+        if (_debug)
+            TracenticEventSource.Log.ShutdownStarted();
         _http.Dispose();
         _handler.Dispose();
+        if (_debug)
+            TracenticEventSource.Log.ShutdownComplete();
         return true;
     }
 

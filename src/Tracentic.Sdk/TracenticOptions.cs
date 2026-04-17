@@ -120,6 +120,13 @@ public class TracenticOptions
     /// </summary>
     public TimeSpan ExportTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
+    /// <summary>
+    /// Enable verbose diagnostic logging. When true, the SDK logs
+    /// detailed information about span recording, batching, export
+    /// requests, and shutdown. Default: false.
+    /// </summary>
+    public bool Debug { get; set; }
+
     /// <summary>Internal - not part of the public API.</summary>
     internal bool MiddlewareRegisteredExplicitly { get; set; }
 }

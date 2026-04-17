@@ -270,6 +270,50 @@ The SDK owns the returned handler's lifetime and disposes it on shutdown. Do not
 | `AttributeLimits`           | platform defaults                             | Limits on attribute count, key/value length                                                                                  |
 | `HttpMessageHandlerFactory` | `SocketsHttpHandler` w/ 5-min pooled lifetime | Custom HTTP transport for the OTLP exporter                                                                                  |
 | `ExportTimeout`             | `30s`                                         | Per-request timeout for OTLP exports                                                                                         |
+| `Debug`                     | `false`                                       | Enable verbose diagnostic logging (see [Debugging](#debugging) below)                                                        |
+
+## Debugging
+
+By default the SDK only emits warnings and errors through `System.Diagnostics` - export failures, missing pricing entries, and exceptions. To see the full export lifecycle (batch size, endpoint, success/failure, shutdown), enable debug mode:
+
+```csharp
+builder.Services.AddTracentic(opts =>
+{
+    opts.ApiKey = "...";
+    opts.ServiceName = "my-service";
+    opts.Debug = true;
+});
+```
+
+With `Debug = true`, the SDK writes verbose events to the `Tracentic-Sdk` EventSource. Capture them with `dotnet-trace`:
+
+```bash
+dotnet-trace collect --providers Tracentic-Sdk:Verbose -- dotnet run
+```
+
+Events emitted in debug mode:
+
+| Event            | Level   | Message                                           |
+| ---------------- | ------- | ------------------------------------------------- |
+| `ExportStarted`  | Verbose | `Flushing {count} span(s) to {endpoint}`          |
+| `ExportSucceeded`| Verbose | `Export succeeded: HTTP {status} ({count} spans)`  |
+| `ShutdownStarted`| Verbose | `Exporter shutting down...`                        |
+| `ShutdownComplete`| Verbose | `Exporter shutdown complete`                      |
+
+Warning and error events are always emitted regardless of the debug flag:
+
+| Event            | Level   | Message                                           |
+| ---------------- | ------- | ------------------------------------------------- |
+| `ExportFailed`   | Warning | `OTLP export failed: HTTP {status} {reason} - {body}` |
+| `ExportException`| Error   | `OTLP export threw: {type}: {message}`            |
+
+### Export timeout
+
+The `ExportTimeout` option controls the per-request timeout for OTLP exports (default: 30 seconds). If exports are timing out in your environment (e.g. CI runners, serverless cold starts), increase it:
+
+```csharp
+opts.ExportTimeout = TimeSpan.FromSeconds(60);
+```
 
 ## Running tests
 
