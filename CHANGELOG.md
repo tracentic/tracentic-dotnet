@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-17
+
+### Added
+
+- `Debug` option on `TracenticOptions` for verbose diagnostic logging. When enabled, the exporter writes `EventLevel.Verbose` events to the `Tracentic-Sdk` EventSource for batch flush, export success, and shutdown lifecycle. Capture with `dotnet-trace --providers Tracentic-Sdk:Verbose`. Warning and error events are always emitted regardless of this flag.
+- README sections for debugging, logging, and export timeout configuration.
+
+### Changed
+
+- `ExportFailed` EventSource event now includes the HTTP response body for easier debugging of server-side rejections.
+
 ## [0.2.0] - 2026-04-15
 
 ### Added
@@ -40,6 +51,7 @@ Initial public release.
 - Multi-targeting: `net6.0`, `net8.0`, `net10.0`.
 - Source Link and symbol package (`.snupkg`) for debuggable consumption.
 
-[Unreleased]: https://github.com/tracentic/tracentic-dotnet/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/tracentic/tracentic-dotnet/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/tracentic/tracentic-dotnet/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tracentic/tracentic-dotnet/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/tracentic/tracentic-dotnet/releases/tag/v0.1.0

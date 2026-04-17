@@ -11,7 +11,7 @@
   <!-- NuGet package metadata -->
   <PropertyGroup>
     <PackageId>Tracentic.Sdk</PackageId>
-    <Version>0.2.1</Version>
+    <Version>0.3.0</Version>
     <Authors>Tracentic</Authors>
     <Company>Tracentic</Company>
     <Product>Tracentic .NET SDK</Product>
